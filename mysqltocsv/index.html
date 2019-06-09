@@ -1,0 +1,156 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MySQL to CSV</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            padding: 0;
+            margin: 0;
+            background: #eff3f6;
+            height: 100%;
+        }
+        .about {
+            padding: 10px;
+        }
+        h1 {
+            margin: 0;
+            padding: 0 0 10px 0;
+        }
+        p {
+            padding: 0;
+            margin: 0;
+        }
+        textarea {
+            border: 1px solid #cccccc;
+            position: absolute;
+            top: 30px;
+            bottom: 10px;
+            width: calc(100% - 15px);
+            padding: 10px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+        }
+        .block {
+            position: absolute;
+            top: 220px;
+            bottom: 0;
+            padding: 10px 5px 10px 10px;
+        }
+        .block+.block {
+            padding: 10px 10px 10px 5px;
+        }
+        .input {
+            left: 0;
+            width: 50%;
+        }
+        .input textarea {
+            left: 10px;
+        }
+        .output {
+            left: 50%;
+            width: 50%;
+        }
+        .output textarea {
+            left: 5px;
+        }
+
+        pre {
+            background: #f5f5f5;
+            border: 1px solid #c2c2c2;
+            display: inline-block;
+            vertical-align: top;
+            padding: 10px;
+        }
+        img {
+            display: inline-block;
+            margin: 45px 15px 0 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="about">
+        <h1>MySQL to CSV</h1>
+        <p>This tool converts MySQL query results to CSV format</p>
+
+<pre>+-----------+--------------+---------------------+
+| entity_id | increment_id | created_at          |
++-----------+--------------+---------------------+
+|         1 | 300009031    | 2018-07-02 09:01:02 |
+|         2 | 300009032    | 2018-07-10 08:45:22 |
+|         3 | 300009033    | 2018-07-10 08:53:57 |
++-----------+--------------+---------------------+</pre>
+        <img width="20" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAlRJREFUeJztk0Fuw0AMxIS+XD9370VTK6lXo90hgbnlYC2ZCAAAAAAAAAAAH1L9AaDlCiKw5goisOYKIrDmCiKw5mcARGDGbwEQgRGvAiACE/4KgAgMuAuACA6nEgARHEw1ACI4lHcCIIIDeTcAIjiMTwIggoP4NAAiOIT/BEAEB/DfAIhgc54IgAg25qkAiGBTngyACDbk6QCIYDNWBEAEG7EqACLYhJUBEMEGrA6ACIbTEQARDKYrACIYSmcARDCQ7gCIYBiKAIhgEKoAtolA+UAOy7IJEeoHclhWZShQP47LsuijHfXDOC1rSnpRP4rbsmSlEfWDOC4rYrpQP4brsuCmBfVDOC/v9axH/Qjuy1tDi1E/ABNHoD6eiSNQH87EEaiPZuII1AczcQTqY5k4AvWhTByB+kgmjkB9IBNHoD6OiSNQH8bEEaiPYuII1AcxcQTqY5g4AvUhbGEEX3c/AFBXzBb9+6uoD2FC+THgGCaUHwMOYkL5MeAoJpQfAw5jQvkx4DgmlB8DDmRC+SE6jA2RH03HsKHyY9EBbBP58dBHs03lx4cfyg6RH8WPY4fKjxcfxEzkR+gfwHl5r2c96kdwXRbctKB+CMdlRUwX6sdwW5asNKJ+EKdlTUkv6kdxWRZ9tKN+GIdlVYYC9eOcviybgCUg3xzkm4N8c5BvDvLNQb45yDcH+eYg3xzkm4N8c5BvDvLNQb45yDcH+eYg3xzkm4N8c5BvDvLNQb45yDcH+eYg3xzkm4N8c5BvDvLNQb45yDcn1R8AAAAAAAAAANDBN9bgO7TomXjVAAAAAElFTkSuQmCC" alt="">
+<pre>"entity_id","increment_id","created_at"
+"1","300009031","2018-07-02 09:01:02"
+"2","300009032","2018-07-10 08:45:22"
+"3","300009033","2018-07-10 08:53:57"
+</pre>
+
+    </div>
+    <div class="block input">
+        <label for="input">MySQL Input</label>
+        <textarea autofocus placeholder="Paste MySQL results here..." id="input" cols="30" rows="10"></textarea>
+    </div>
+    <div class="block output">
+        <label for="output">CSV Output</label>
+        <textarea readonly id="output" cols="30" rows="10"></textarea>
+    </div>
+
+    <script>
+
+        /**
+         * Covert SQL result to CSV format
+         */
+        class SQLtoCSV {
+
+            /**
+             *  Constructor
+             */
+            constructor() {
+                this.input = document.getElementById('input');
+                this.output = document.getElementById('output');
+
+                this.input.addEventListener('input', () => this.onInput());
+            }
+
+            /**
+             * @return {void}
+             */
+            onInput() {
+                let content = this.input.value.trim().split(/[\|\+]\n/);
+                let output = [];
+
+                content.forEach((line, i) => {
+                    if (line.startsWith('+-') || line.trim() === "") {
+                        return;
+                    }
+
+                    output.push(line
+                        .replace(/^\|\s*/, '')
+                        .replace(/\s*\|\s*$/, '')
+                        .split(/\s*\|\s/)
+                        .map(c => c.trim()));
+                });
+                this.output.value = output.map(function(d){
+                    return JSON.stringify(d);
+                })
+                .join('\n')
+                .replace(/(^\[)|(\]$)/mg, '')
+                .replace(/\\"/g, '""')
+                .replace(/\\n/g, "\n");
+            }
+
+        }
+
+        // Let's go
+        new SQLtoCSV;
+    </script>
+</body>
+</html>
